@@ -4,31 +4,60 @@
 /// </summary>
 public class CustomerService {
     public static void Run() {
-        // Example code to see what's in the customer service queue:
-        // var cs = new CustomerService(10);
-        // Console.WriteLine(cs);
-
-        // Test Cases
-
         // Test 1
-        // Scenario: 
-        // Expected Result: 
+        // Scenario: Add one customer and serve the customer.
+        // Expected Result: The added customer is displayed.
+        // Defect(s) Found: ServeCustomer removed the customer before reading it.
         Console.WriteLine("Test 1");
-
-        // Defect(s) Found: 
+        var cs = new CustomerService(4);
+        cs.AddNewCustomer();
+        cs.ServeCustomer();
 
         Console.WriteLine("=================");
 
         // Test 2
-        // Scenario: 
-        // Expected Result: 
+        // Scenario: Add two customers and serve both customers.
+        // Expected Result: Customers display in FIFO order.
+        // Defect(s) Found: None.
         Console.WriteLine("Test 2");
-
-        // Defect(s) Found: 
+        cs = new CustomerService(4);
+        cs.AddNewCustomer();
+        cs.AddNewCustomer();
+        Console.WriteLine($"Before serving customers: {cs}");
+        cs.ServeCustomer();
+        cs.ServeCustomer();
+        Console.WriteLine($"After serving customers: {cs}");
 
         Console.WriteLine("=================");
 
-        // Add more Test Cases As Needed Below
+        // Test 3
+        // Scenario: Serve a customer from an empty queue.
+        // Expected Result: An error message is displayed.
+        // Defect(s) Found: ServeCustomer attempted to remove an item from an empty queue.
+        Console.WriteLine("Test 3");
+        cs = new CustomerService(4);
+        cs.ServeCustomer();
+
+        Console.WriteLine("=================");
+
+        // Test 4
+        // Scenario: Add five customers to a queue with maximum size four.
+        // Expected Result: The fifth customer is rejected.
+        // Defect(s) Found: The full check used > instead of >=.
+        Console.WriteLine("Test 4");
+        cs = new CustomerService(4);
+        cs.AddNewCustomer(); cs.AddNewCustomer(); cs.AddNewCustomer(); cs.AddNewCustomer(); cs.AddNewCustomer();
+        Console.WriteLine($"Service Queue: {cs}");
+
+        Console.WriteLine("=================");
+
+        // Test 5
+        // Scenario: Create a queue with an invalid maximum size.
+        // Expected Result: The maximum size defaults to 10.
+        // Defect(s) Found: None.
+        Console.WriteLine("Test 5");
+        cs = new CustomerService(0);
+        Console.WriteLine($"Size should be 10: {cs}");
     }
 
     private readonly List<Customer> _queue = new();
@@ -67,7 +96,7 @@ public class CustomerService {
     /// </summary>
     private void AddNewCustomer() {
         // Verify there is room in the service queue
-        if (_queue.Count > _maxSize) {
+        if (_queue.Count >= _maxSize) {
             Console.WriteLine("Maximum Number of Customers in Queue.");
             return;
         }
@@ -88,8 +117,13 @@ public class CustomerService {
     /// Dequeue the next customer and display the information.
     /// </summary>
     private void ServeCustomer() {
-        _queue.RemoveAt(0);
+        if (_queue.Count == 0) {
+            Console.WriteLine("No Customers in the queue");
+            return;
+        }
+
         var customer = _queue[0];
+        _queue.RemoveAt(0);
         Console.WriteLine(customer);
     }
 
